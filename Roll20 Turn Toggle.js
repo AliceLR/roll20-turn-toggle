@@ -17,13 +17,20 @@
     var charecterlist = "#initiativewindow ul.characterlist";
 
     var fieldname = "span.name";
+    var fieldinit = "span.initiative";
     var fieldblacklist = "span.editable, span.remove, input";
 
-    var markstyle = "background-color: #AAF; color: #CCF; font-weight: bold;";
+    var markstyle = "background-color: #9BF; font-weight: bold;";
+    var markstyle0 = "background-color: #F9B; font-weight: bold;";
 
     function getname(li)
     {
         return li.find(fieldname).text();
+    }
+
+    function getinit(li)
+    {
+        return li.find(fieldinit).text();
     }
 
     function isreset(li)
@@ -42,15 +49,22 @@
     function mark(li)
     {
         var name = getname(li);
+        var init = getinit(li);
         if(name.length > 0) localStorage.setItem("TURNTOGGLE:" + name, true);
 
-        li.attr("style", markstyle);
+        // HACK: style allies and enemies differently
+        if(init == 0)
+            li.attr("style", markstyle0);
+
+        else
+            li.attr("style", markstyle);
     }
 
-    function unmarkall()
+    function markall()
     {
         $(charecterlist).find("li").each(function () {
-            unmark($(this));
+            if(!isreset($(this)))
+                mark($(this));
         });
     }
 
@@ -72,16 +86,19 @@
     }
 
     window.setInterval(function() {
-        /*
-        var _charectertitle = $(charectertitle);
 
-        _charectertitle.unbind("click");
-        _charectertitle.click(function () {
-            unmarkall()
-        })
-        */
+        var lis = $(charecterlist).find("li");
+        var abort = 0;
 
-        $(charecterlist).find("li").each(function () {
+        // HACK: Stop updating during a drag event.
+        lis.each(function () {
+            if(!abort)
+                if($(this).css("top") > "0px")
+                    abort = 1;
+        });
+        if(abort) return;
+
+        lis.each(function () {
             var _li = $(this);
             updatemark(_li);
 
@@ -95,7 +112,7 @@
 
                 if(isreset(li))
                 {
-                    unmarkall();
+                    markall();
                 }
                 else
 
