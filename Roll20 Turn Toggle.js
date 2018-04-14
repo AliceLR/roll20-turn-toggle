@@ -11,8 +11,6 @@
 (function() {
     'use strict';
 
-    var polldelay = 100;
-
     var initiativewindow = "#initiativewindow";
     var charectertitle = "#initiativewindow div.ui-dialog-titlebar";
     var charecterlist = "#initiativewindow ul.characterlist";
@@ -86,8 +84,6 @@
         }
     }
 
-    //window.setInterval(function() {
-
     function updateinit()
     {
         var lis = $(charecterlist).find("li");
@@ -129,8 +125,7 @@
                 }
             });
         });
-
-    }//, polldelay);
+    }
 
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
     var config = { childList: true, characterData: true, attributes: true, subtree: true };
@@ -149,7 +144,6 @@
     $(document).ready(function() {
         console.log('Creating mutation listener...');
         observer = new MutationObserver(function(mutations) {
-            console.log('MutationObserver detected changes.');
             observer.disconnect();
             updateinit();
             attach();
