@@ -12,6 +12,7 @@
     'use strict';
 
     var initiativewindow = "#initiativewindow";
+    var initiativebuttons = "#initiativewindow div .ui-dialog-buttonset";
     var charectertitle = "#initiativewindow div.ui-dialog-titlebar";
     var charecterlist = "#initiativewindow ul.characterlist";
 
@@ -19,8 +20,34 @@
     var fieldinit = "span.initiative";
     var fieldblacklist = "span.editable, span.remove, input";
 
-    var markstyle = "background-color: #9BF; font-weight: bold;";
-    var markstyle0 = "background-color: #F9B; font-weight: bold;";
+    var markstyleally = "background-color: #9BF; font-weight: bold;";
+    var markstyleenemy = "background-color: #F9B; font-weight: bold;";
+
+    var buttonstyleally = "background-image: linear-gradient(#58D,#358); color: #FFF; font-weight: bold;";
+    var buttonstyleenemy = "background-image: linear-gradient(#D58,#835); color: #FFF; font-weight: bold;";
+
+    /**
+     * Persistent storage functions
+     */
+
+    function getmarkedvalue(name)
+    {
+        return localStorage.getItem("TURNTOGGLE:" + name);
+    }
+
+    function setmarkedvalue(name)
+    {
+        localStorage.setItem("TURNTOGGLE:" + name, true);
+    }
+
+    function removemarkedvalue(name)
+    {
+        localStorage.removeItem("TURNTOGGLE:" + name);
+    }
+
+    /**
+     * Init list element management functions.
+     */
 
     function getname(li)
     {
@@ -37,10 +64,20 @@
         return getname(li) == "Reset";
     }
 
+    function isally(li)
+    {
+        return getinit(li) != 0;
+    }
+
+    function isenemy(li)
+    {
+        return getinit(li) == 0;
+    }
+
     function unmark(li)
     {
         var name = getname(li);
-        if(name.length > 0) localStorage.removeItem("TURNTOGGLE:" + name);
+        if(name.length > 0) removemarkedvalue(name);
 
         li.removeAttr("style");
     }
@@ -48,23 +85,43 @@
     function mark(li)
     {
         var name = getname(li);
-        var init = getinit(li);
-        if(name.length > 0) localStorage.setItem("TURNTOGGLE:" + name, true);
+        if(name.length > 0) setmarkedvalue(name);
 
-        // HACK: style allies and enemies differently
-        if(init == 0)
-            li.attr("style", markstyle0);
+        if(isally(li))
+            li.attr("style", markstyleally);
 
-        else
-            li.attr("style", markstyle);
+        else if(isenemy(li))
+            li.attr("style", markstyleenemy);
     }
 
-    function markall()
+    function iterateinit(fn, filter=null)
     {
         $(charecterlist).find("li").each(function () {
-            if(!isreset($(this)))
-                mark($(this));
+            var li = $(this);
+            if(!isreset(li))
+                if(filter === null || filter(li))
+                    fn(li);
         });
+    }
+
+    function markallies()
+    {
+        iterateinit(mark, isally);
+    }
+
+    function markenemies()
+    {
+        iterateinit(mark, isenemy);
+    }
+
+    function unmarkallies()
+    {
+        iterateinit(unmark, isally);
+    }
+
+    function unmarkenemies()
+    {
+        iterateinit(unmark, isenemy);
     }
 
     function updatemark(li)
@@ -72,7 +129,7 @@
         var name = getname(li);
         if(name.length >= 0)
         {
-            var marked = localStorage.getItem("TURNTOGGLE:" + name);
+            var marked = getmarkedvalue(name);
             if(marked !== null)
             {
                 mark(li);
@@ -81,6 +138,32 @@
             {
                 unmark(li);
             }
+        }
+    }
+
+    /**
+     * Update the initiative list.
+     */
+    function button(text, id, style)
+    {
+        return `<button type="button" style="`+ style +`" id="`+ id +`"
+          class="ui-button ui-widget ui-state-default ui-corner-all
+          ui-button-text-only initbutton" role="button" aria-disabled="false">`
+          + text + `</button>`;
+    }
+
+    function injectbuttons(buttondiv)
+    {
+        if(buttondiv.find(".initbutton").length == 0)
+        {
+            buttondiv.append(button("Mark", "markally", buttonstyleally));
+            buttondiv.append(button("Clear", "clearally", buttonstyleally));
+            buttondiv.append(button("Mark", "markenemy", buttonstyleenemy));
+            buttondiv.append(button("Clear", "clearenemy", buttonstyleenemy));
+            buttondiv.on("click", "#markally", markallies);
+            buttondiv.on("click", "#markenemy", markenemies);
+            buttondiv.on("click", "#clearally", unmarkallies);
+            buttondiv.on("click", "#clearenemy", unmarkenemies);
         }
     }
 
@@ -97,6 +180,10 @@
         });
         if(abort) return;
 
+        // Inject turn order management buttons
+        injectbuttons($(initiativewindow));
+
+        // Inject styling and click listeners into the initiative list.
         lis.each(function () {
             var _li = $(this);
             updatemark(_li);
@@ -111,7 +198,7 @@
 
                 if(isreset(li))
                 {
-                    markall();
+                    iterateinit(mark);
                 }
                 else
 
