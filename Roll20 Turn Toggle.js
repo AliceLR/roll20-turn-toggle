@@ -13,6 +13,7 @@
 
     var polldelay = 100;
 
+    var initiativewindow = "#initiativewindow";
     var charectertitle = "#initiativewindow div.ui-dialog-titlebar";
     var charecterlist = "#initiativewindow ul.characterlist";
 
@@ -85,8 +86,10 @@
         }
     }
 
-    window.setInterval(function() {
+    //window.setInterval(function() {
 
+    function updateinit()
+    {
         var lis = $(charecterlist).find("li");
         var abort = 0;
 
@@ -127,7 +130,33 @@
             });
         });
 
-    }, polldelay);
+    }//, polldelay);
+
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+    var config = { childList: true, characterData: true, attributes: true, subtree: true };
+    var observer = null;
+
+    function attach()
+    {
+        if(observer !== null)
+        {
+            $(initiativewindow).each(function () {
+                observer.observe(this, config);
+            });
+        }
+    }
+
+    $(document).ready(function() {
+        console.log('Creating mutation listener...');
+        observer = new MutationObserver(function(mutations) {
+            console.log('MutationObserver detected changes.');
+            observer.disconnect();
+            updateinit();
+            attach();
+        });
+
+        attach();
+    });
 
     console.log("Roll20 Turn Toggle successfully didn't blow up");
 })();
