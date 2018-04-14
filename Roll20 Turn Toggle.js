@@ -148,13 +148,14 @@
     {
         return `<button type="button" style="`+ style +`" id="`+ id +`"
           class="ui-button ui-widget ui-state-default ui-corner-all
-          ui-button-text-only initbutton" role="button" aria-disabled="false">`
+          ui-button-text-only initbutton bigbuttonwithicons" role="button" aria-disabled="true">`
           + text + `</button>`;
     }
 
     function injectbuttons(buttondiv)
     {
-        if(buttondiv.find(".initbutton").length == 0)
+        var buttonlist = buttondiv.find(".initbutton");
+        if(buttonlist.length == 0)
         {
             buttondiv.append(button("Mark", "markally", buttonstyleally));
             buttondiv.append(button("Clear", "clearally", buttonstyleally));
@@ -165,6 +166,10 @@
             buttondiv.on("click", "#clearally", unmarkallies);
             buttondiv.on("click", "#clearenemy", unmarkenemies);
         }
+        else buttonlist.each(function () {
+            // This sometimes gets automatically added, corrupting the button text.
+            $(this).removeClass("pictos");
+        });
     }
 
     function updateinit()
