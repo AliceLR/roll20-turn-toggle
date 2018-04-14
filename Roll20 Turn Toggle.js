@@ -12,7 +12,6 @@
     'use strict';
 
     var initiativewindow = "#initiativewindow";
-    var initiativebuttons = "#initiativewindow div .ui-dialog-buttonset";
     var charectertitle = "#initiativewindow div.ui-dialog-titlebar";
     var charecterlist = "#initiativewindow ul.characterlist";
 
@@ -23,6 +22,7 @@
     var markstyleally = "background-color: #9BF; font-weight: bold;";
     var markstyleenemy = "background-color: #F9B; font-weight: bold;";
 
+    var buttonstylediv = "overflow: hidden; margin-top: 2px; height: 28px";
     var buttonstyleally = "background-image: linear-gradient(#58D,#358); color: #FFF; font-weight: bold;";
     var buttonstyleenemy = "background-image: linear-gradient(#D58,#835); color: #FFF; font-weight: bold;";
 
@@ -146,25 +146,32 @@
      */
     function button(text, id, style)
     {
-        return `<button type="button" style="`+ style +`" id="`+ id +`"
-          class="ui-button ui-widget ui-state-default ui-corner-all
-          ui-button-text-only initbutton bigbuttonwithicons" role="button" aria-disabled="true">`
-          + text + `</button>`;
+        var b = $('<button type="button" role="button" aria-disabled="true" />');
+        b.addClass("ui-button ui-widget ui-state-default ui-corner-all");
+        b.addClass("ui-button-text-only bigbuttonwithicons initbutton");
+        b.attr("style", style);
+        b.attr("id", id);
+        b.text(text);
+        return b;
     }
 
-    function injectbuttons(buttondiv)
+    function injectbuttons(initdiv)
     {
-        var buttonlist = buttondiv.find(".initbutton");
+        var buttondiv = initdiv.parent();
+        var buttonlist = buttondiv.find("div .initbutton");
         if(buttonlist.length == 0)
         {
-            buttondiv.append(button("Mark", "markally", buttonstyleally));
-            buttondiv.append(button("Clear", "clearally", buttonstyleally));
-            buttondiv.append(button("Mark", "markenemy", buttonstyleenemy));
-            buttondiv.append(button("Clear", "clearenemy", buttonstyleenemy));
-            buttondiv.on("click", "#markally", markallies);
-            buttondiv.on("click", "#markenemy", markenemies);
-            buttondiv.on("click", "#clearally", unmarkallies);
-            buttondiv.on("click", "#clearenemy", unmarkenemies);
+            var dv = $('<div/>');
+            dv.attr("style", buttonstylediv);
+            dv.insertAfter(initdiv);
+            dv.append(button("Mark", "markally", buttonstyleally));
+            dv.append(button("Clear", "clearally", buttonstyleally));
+            dv.append(button("Mark", "markenemy", buttonstyleenemy));
+            dv.append(button("Clear", "clearenemy", buttonstyleenemy));
+            dv.on("click", "#markally", markallies);
+            dv.on("click", "#markenemy", markenemies);
+            dv.on("click", "#clearally", unmarkallies);
+            dv.on("click", "#clearenemy", unmarkenemies);
         }
         else buttonlist.each(function () {
             // This sometimes gets automatically added, corrupting the button text.
