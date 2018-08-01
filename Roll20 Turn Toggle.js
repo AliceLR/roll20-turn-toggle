@@ -12,7 +12,6 @@
     'use strict';
 
     var initiativewindow = "#initiativewindow";
-    var charectertitle = "#initiativewindow div.ui-dialog-titlebar";
     var charecterlist = "#initiativewindow ul.characterlist";
 
     var fieldname = "span.name";
@@ -49,6 +48,11 @@
      * Init list element management functions.
      */
 
+    function getid(li)
+    {
+        return li.attr("data-tokenid");
+    }
+
     function getname(li)
     {
         return li.find(fieldname).text();
@@ -74,18 +78,25 @@
         return getinit(li) == 0;
     }
 
+    function ismarked(li)
+    {
+        var id = getid(li);
+        if(id.length > 0) return getmarkedvalue(id);
+        return null;
+    }
+
     function unmark(li)
     {
-        var name = getname(li);
-        if(name.length > 0) removemarkedvalue(name);
+        var id = getid(li);
+        if(id.length > 0) removemarkedvalue(id);
 
         li.removeAttr("style");
     }
 
     function mark(li)
     {
-        var name = getname(li);
-        if(name.length > 0) setmarkedvalue(name);
+        var id = getid(li);
+        if(id.length > 0) setmarkedvalue(id);
 
         if(isally(li))
             li.attr("style", markstyleally);
@@ -129,7 +140,7 @@
         var name = getname(li);
         if(name.length >= 0)
         {
-            var marked = getmarkedvalue(name);
+            var marked = ismarked(li);
             if(marked !== null)
             {
                 mark(li);
